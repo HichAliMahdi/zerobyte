@@ -3,7 +3,7 @@ import { db } from "../../db/db";
 import { sessionsTable, usersTable } from "../../db/schema";
 import { logger } from "../../utils/logger";
 
-const SESSION_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
+const SESSION_DURATION = 60 * 60 * 24 * 30 * 1000; // 30 days in milliseconds
 
 export class AuthService {
 	/**
@@ -30,7 +30,7 @@ export class AuthService {
 
 		logger.info(`User registered: ${username}`);
 		const sessionId = crypto.randomUUID();
-		const expiresAt = new Date(Date.now() + SESSION_DURATION).getTime();
+		const expiresAt = Date.now() + SESSION_DURATION;
 
 		await db.insert(sessionsTable).values({
 			id: sessionId,
@@ -66,7 +66,7 @@ export class AuthService {
 		}
 
 		const sessionId = crypto.randomUUID();
-		const expiresAt = new Date(Date.now() + SESSION_DURATION).getTime();
+		const expiresAt = Date.now() + SESSION_DURATION;
 
 		await db.insert(sessionsTable).values({
 			id: sessionId,

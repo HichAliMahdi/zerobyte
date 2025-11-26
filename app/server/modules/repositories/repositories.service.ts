@@ -396,7 +396,7 @@ const updateRepository = async (name: string, updates: { name?: string; compress
 		.set({
 			name: newName,
 			compressionMode: updates.compressionMode ?? existing.compressionMode,
-			updatedAt: Math.floor(Date.now() / 1000),
+			updatedAt: Date.now(),
 		})
 		.where(eq(repositoriesTable.id, existing.id))
 		.returning();
