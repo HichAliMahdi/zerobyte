@@ -67,12 +67,7 @@ export const S3RepositoryForm = ({ form }: Props) => {
 					<FormItem>
 						<FormLabel>Secret Access Key</FormLabel>
 						<FormControl>
-							<SecretInput
-								placeholder="••••••••"
-								value={field.value ?? ""}
-								onChange={field.onChange}
-								isDirty={form.getFieldState("secretAccessKey", form.formState).isDirty}
-							/>
+							<SecretInput placeholder="••••••••" value={field.value ?? ""} onChange={field.onChange} />
 						</FormControl>
 						<FormDescription>S3 secret access key for authentication.</FormDescription>
 						<FormMessage />

@@ -53,12 +53,7 @@ export const AzureRepositoryForm = ({ form }: Props) => {
 					<FormItem>
 						<FormLabel>Account Key</FormLabel>
 						<FormControl>
-							<SecretInput
-								placeholder="••••••••"
-								value={field.value ?? ""}
-								onChange={field.onChange}
-								isDirty={form.getFieldState("accountKey", form.formState).isDirty}
-							/>
+							<SecretInput placeholder="••••••••" value={field.value ?? ""} onChange={field.onChange} />
 						</FormControl>
 						<FormDescription>Azure Storage account key for authentication.</FormDescription>
 						<FormMessage />

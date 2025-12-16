@@ -69,12 +69,7 @@ export const R2RepositoryForm = ({ form }: Props) => {
 					<FormItem>
 						<FormLabel>Secret Access Key</FormLabel>
 						<FormControl>
-							<SecretInput
-								placeholder="••••••••"
-								value={field.value ?? ""}
-								onChange={field.onChange}
-								isDirty={form.getFieldState("secretAccessKey", form.formState).isDirty}
-							/>
+							<SecretInput placeholder="••••••••" value={field.value ?? ""} onChange={field.onChange} />
 						</FormControl>
 						<FormDescription>R2 API token Secret Access Key (shown once when creating token).</FormDescription>
 						<FormMessage />

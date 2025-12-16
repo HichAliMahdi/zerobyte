@@ -246,7 +246,6 @@ export const CreateRepositoryForm = ({
 												placeholder="Enter repository password"
 												value={field.value ?? ""}
 												onChange={field.onChange}
-												isDirty={form.getFieldState("customPassword", form.formState).isDirty}
 											/>
 										</FormControl>
 										<FormDescription>

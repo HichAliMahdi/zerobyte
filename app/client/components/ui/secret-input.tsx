@@ -14,11 +14,9 @@ export const isStoredSecretValue = (value?: string): boolean => {
 	return value.startsWith("env://") || value.startsWith("file://") || value.startsWith("encv1:");
 };
 
-type SecretInputProps = Omit<React.ComponentProps<typeof Input>, "type"> & {
-	isDirty?: boolean;
-};
+type SecretInputProps = Omit<React.ComponentProps<typeof Input>, "type">
 
-export const SecretInput = ({ className, isDirty, value, ...props }: SecretInputProps) => {
+export const SecretInput = ({ className, value, ...props }: SecretInputProps) => {
 	const [revealed, setRevealed] = useState(false);
 
 	const showAsPlaintext = useMemo(() => {
@@ -26,8 +24,8 @@ export const SecretInput = ({ className, isDirty, value, ...props }: SecretInput
 			return false;
 		}
 
-		return isStoredSecretValue(value) && !isDirty;
-	}, [isDirty, value]);
+		return isStoredSecretValue(value);
+	}, [value]);
 
 	const type = useMemo(() => {
 		if (showAsPlaintext) {

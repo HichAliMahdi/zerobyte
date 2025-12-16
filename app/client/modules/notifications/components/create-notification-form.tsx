@@ -214,11 +214,7 @@ export const CreateNotificationForm = ({ onSubmit, mode = "create", initialValue
 								<FormItem>
 									<FormLabel>Password (Optional)</FormLabel>
 									<FormControl>
-										<SecretInput
-											{...field}
-											isDirty={form.getFieldState("password", form.formState).isDirty}
-											placeholder="••••••••"
-										/>
+										<SecretInput {...field} placeholder="••••••••" />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -420,11 +416,7 @@ export const CreateNotificationForm = ({ onSubmit, mode = "create", initialValue
 								<FormItem>
 									<FormLabel>App Token</FormLabel>
 									<FormControl>
-										<SecretInput
-											{...field}
-											isDirty={form.getFieldState("token", form.formState).isDirty}
-											placeholder="••••••••"
-										/>
+										<SecretInput {...field} placeholder="••••••••" />
 									</FormControl>
 									<FormDescription>Application token from Gotify.</FormDescription>
 									<FormMessage />
@@ -519,11 +511,7 @@ export const CreateNotificationForm = ({ onSubmit, mode = "create", initialValue
 								<FormItem>
 									<FormLabel>Password (Optional)</FormLabel>
 									<FormControl>
-										<SecretInput
-											{...field}
-											isDirty={form.getFieldState("password", form.formState).isDirty}
-											placeholder="••••••••"
-										/>
+										<SecretInput {...field} placeholder="••••••••" />
 									</FormControl>
 									<FormDescription>Password for server authentication, if required.</FormDescription>
 									<FormMessage />
@@ -580,11 +568,7 @@ export const CreateNotificationForm = ({ onSubmit, mode = "create", initialValue
 								<FormItem>
 									<FormLabel>API Token</FormLabel>
 									<FormControl>
-										<SecretInput
-											{...field}
-											isDirty={form.getFieldState("apiToken", form.formState).isDirty}
-											placeholder="••••••••"
-										/>
+										<SecretInput {...field} placeholder="••••••••" />
 									</FormControl>
 									<FormDescription>Application API token from your Pushover application.</FormDescription>
 									<FormMessage />
@@ -644,11 +628,7 @@ export const CreateNotificationForm = ({ onSubmit, mode = "create", initialValue
 								<FormItem>
 									<FormLabel>Bot Token</FormLabel>
 									<FormControl>
-										<SecretInput
-											{...field}
-											isDirty={form.getFieldState("botToken", form.formState).isDirty}
-											placeholder="123456789:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
-										/>
+										<SecretInput {...field} placeholder="123456789:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" />
 									</FormControl>
 									<FormDescription>
 										Telegram bot token. Get this from BotFather when you create your bot.

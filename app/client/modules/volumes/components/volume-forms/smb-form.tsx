@@ -68,12 +68,7 @@ export const SMBForm = ({ form }: Props) => {
 					<FormItem>
 						<FormLabel>Password</FormLabel>
 						<FormControl>
-							<SecretInput
-								placeholder="••••••••"
-								value={field.value ?? ""}
-								onChange={field.onChange}
-								isDirty={form.getFieldState("password", form.formState).isDirty}
-							/>
+							<SecretInput placeholder="••••••••" value={field.value ?? ""} onChange={field.onChange} />
 						</FormControl>
 						<FormDescription>Password for SMB authentication.</FormDescription>
 						<FormMessage />
