@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
 	DndContext,
 	closestCenter,
@@ -9,32 +9,20 @@ import {
 	type DragEndEvent,
 } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from "@dnd-kit/sortable";
-import { CalendarClock, Database, HardDrive, Plus } from "lucide-react";
+import { CalendarClock, Plus } from "lucide-react";
 import { Link } from "react-router";
 import { useState, useEffect } from "react";
-import { SortableBackupCard } from "../components/sortable-backup-card";
-import { BackupStatusDot } from "../components/backup-status-dot";
 import { EmptyState } from "~/client/components/empty-state";
 import { Button } from "~/client/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/client/components/ui/card";
+import { Card, CardContent } from "~/client/components/ui/card";
 import type { Route } from "./+types/backups";
 import { listBackupSchedules } from "~/client/api-client";
-import { listBackupSchedulesOptions, listBackupSchedulesQueryKey } from "~/client/api-client/@tanstack/react-query.gen";
-
-// Temporary helper until API client is regenerated
-async function reorderBackupSchedules(scheduleIds: number[]) {
-	const response = await fetch("/api/v1/backups/reorder", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({ scheduleIds }),
-	});
-	if (!response.ok) {
-		throw new Error("Failed to reorder backup schedules");
-	}
-	return response.json();
-}
+import {
+	listBackupSchedulesOptions,
+	reorderBackupSchedulesMutation,
+} from "~/client/api-client/@tanstack/react-query.gen";
+import { SortableCard } from "~/client/components/sortable-card";
+import { BackupCard } from "../components/backup-card";
 
 export const handle = {
 	breadcrumb: () => [{ label: "Backups" }],
@@ -57,15 +45,12 @@ export const clientLoader = async () => {
 };
 
 export default function Backups({ loaderData }: Route.ComponentProps) {
-	const queryClient = useQueryClient();
 	const { data: schedules, isLoading } = useQuery({
 		...listBackupSchedulesOptions(),
 		initialData: loaderData,
 	});
 
 	const [items, setItems] = useState(schedules?.map((s) => s.id) ?? []);
-
-	// Keep items in sync with schedules
 	useEffect(() => {
 		if (schedules) {
 			setItems(schedules.map((s) => s.id));
@@ -74,9 +59,7 @@ export default function Backups({ loaderData }: Route.ComponentProps) {
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
-			activationConstraint: {
-				distance: 8,
-			},
+			activationConstraint: { distance: 8 },
 		}),
 		useSensor(KeyboardSensor, {
 			coordinateGetter: sortableKeyboardCoordinates,
@@ -84,16 +67,7 @@ export default function Backups({ loaderData }: Route.ComponentProps) {
 	);
 
 	const reorderMutation = useMutation({
-		mutationFn: async (scheduleIds: number[]) => {
-			await reorderBackupSchedules(scheduleIds);
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: listBackupSchedulesQueryKey() });
-		},
-		onError: () => {
-			// Revert the order or display error to user
-			queryClient.invalidateQueries({ queryKey: listBackupSchedulesQueryKey() });
-		},
+		...reorderBackupSchedulesMutation(),
 	});
 
 	const handleDragEnd = (event: DragEndEvent) => {
@@ -104,9 +78,7 @@ export default function Backups({ loaderData }: Route.ComponentProps) {
 				const oldIndex = items.indexOf(active.id as number);
 				const newIndex = items.indexOf(over.id as number);
 				const newItems = arrayMove(items, oldIndex, newIndex);
-
-				// Save the new order
-				reorderMutation.mutate(newItems);
+				reorderMutation.mutate({ body: { scheduleIds: newItems } });
 
 				return newItems;
 			});
@@ -139,7 +111,6 @@ export default function Backups({ loaderData }: Route.ComponentProps) {
 		);
 	}
 
-	// Create a map for quick lookup
 	const scheduleMap = new Map(schedules.map((s) => [s.id, s]));
 
 	return (
@@ -150,7 +121,11 @@ export default function Backups({ loaderData }: Route.ComponentProps) {
 						{items.map((id) => {
 							const schedule = scheduleMap.get(id);
 							if (!schedule) return null;
-							return <SortableBackupCard key={schedule.id} schedule={schedule} />;
+							return (
+								<SortableCard uniqueId={id} key={schedule.id}>
+									<BackupCard schedule={schedule} />
+								</SortableCard>
+							);
 						})}
 						<Link to="/backups/create">
 							<Card className="flex flex-col items-center justify-center h-full hover:bg-muted/50 transition-colors cursor-pointer">

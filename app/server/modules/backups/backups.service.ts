@@ -639,13 +639,11 @@ const getMirrorCompatibility = async (scheduleId: number) => {
 };
 
 const reorderSchedules = async (scheduleIds: number[]) => {
-	// Validate input - check for duplicates
 	const uniqueIds = new Set(scheduleIds);
 	if (uniqueIds.size !== scheduleIds.length) {
 		throw new BadRequestError("Duplicate schedule IDs in reorder request");
 	}
 
-	// Verify all schedules exist
 	const existingSchedules = await db.query.backupSchedulesTable.findMany({
 		columns: { id: true },
 	});
@@ -657,7 +655,6 @@ const reorderSchedules = async (scheduleIds: number[]) => {
 		}
 	}
 
-	// Batch update in a transaction
 	await db.transaction(async (tx) => {
 		const now = Date.now();
 		await Promise.all(
