@@ -23,8 +23,6 @@ services:
 
       - ./app:/app/app
       - ~/.config/rclone:/root/.config/rclone
-      # - /run/docker/plugins:/run/docker/plugins
-      # - /var/run/docker.sock:/var/run/docker.sock
 
   zerobyte-prod:
     build:
@@ -41,9 +39,7 @@ services:
       - "4096:4096"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /var/lib/zerobyte:/var/lib/zerobyte:rshared
-      - /run/docker/plugins:/run/docker/plugins
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/zerobyte:/var/lib/zerobyte
       - ~/.config/rclone:/root/.config/rclone
 
 # secrets:
