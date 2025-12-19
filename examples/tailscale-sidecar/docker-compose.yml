@@ -7,7 +7,7 @@ services:
     cap_add:
       - NET_ADMIN
       # Optional: Some hosts require this for kernel-mode Tailscale.
-      # If it causes issues (common on Docker Desktop), keep it disabled.
+      # If it causes issues (common on Docker Desktop), keep it commented out (disabled as shown here).
       # - SYS_MODULE
     # Kernel-mode Tailscale (TS_USERSPACE=false) requires /dev/net/tun.
     # If you switch to userspace mode (TS_USERSPACE=true), you MUST remove this
