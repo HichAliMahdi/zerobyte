@@ -50,7 +50,7 @@ services:
     devices:
       - /dev/fuse:/dev/fuse
     environment:
-      - TZ=Europe/Paris  # Set your timezone here
+      - TZ=Europe/Paris # Set your timezone here
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/lib/zerobyte:/var/lib/zerobyte
@@ -70,6 +70,30 @@ docker compose up -d
 
 Once the container is running, you can access the web interface at `http://<your-server-ip>:4096`.
 
+## Configuration
+
+Zerobyte can be customized using environment variables. Below are the available options:
+
+### Environment Variables
+
+| Variable              | Description                                                                                                   | Default    |
+| :-------------------- | :------------------------------------------------------------------------------------------------------------ | :--------- |
+| `PORT`                | The port the web interface and API will listen on.                                                            | `4096`     |
+| `RESTIC_HOSTNAME`     | The hostname used by Restic when creating snapshots. Useful for identifying which machine a backup came from. | `zerobyte` |
+| `LOG_LEVEL`           | Logging verbosity. Options: `debug`, `info`, `warn`, `error`.                                                 | `info`     |
+| `SERVER_IDLE_TIMEOUT` | Idle timeout for the server in seconds.                                                                       | `60`       |
+| `TZ`                  | Timezone for the container (e.g., `Europe/Paris`). **Crucial for accurate backup scheduling.**                | `UTC`      |
+
+### Secret References
+
+For enhanced security, Zerobyte supports dynamic secret resolution for sensitive fields (like passwords, access keys, etc.) in volume and repository configurations. Instead of storing the encrypted secret in the database, you can use one of the following prefixes:
+
+- `env://VAR_NAME`: Reads the secret from the environment variable `VAR_NAME`.
+- `file://SECRET_NAME`: Reads the secret from `/run/secrets/SECRET_NAME` (standard Docker Secrets path).
+
+**Example:**
+When configuring an S3 repository, you can set the Secret Access Key to `env://S3_SECRET_KEY` and then provide that variable in your `docker-compose.yml`.
+
 ### Simplified setup (No remote mounts)
 
 If you only need to back up locally mounted folders and don't require remote share mounting capabilities, you can remove the `SYS_ADMIN` capability and FUSE device from your `docker-compose.yml`:
@@ -83,7 +107,7 @@ services:
     ports:
       - "4096:4096"
     environment:
-      - TZ=Europe/Paris  # Set your timezone here
+      - TZ=Europe/Paris # Set your timezone here
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/lib/zerobyte:/var/lib/zerobyte
@@ -91,6 +115,7 @@ services:
 ```
 
 **Trade-offs:**
+
 - ✅ Improved security by reducing container capabilities
 - ✅ Support for local directories
 - ✅ Keep support all repository types (local, S3, GCS, Azure, rclone)
