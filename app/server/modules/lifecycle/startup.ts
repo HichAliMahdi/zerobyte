@@ -13,6 +13,7 @@ import { repositoriesService } from "../repositories/repositories.service";
 import { notificationsService } from "../notifications/notifications.service";
 import { VolumeAutoRemountJob } from "~/server/jobs/auto-remount";
 import { cache } from "~/server/utils/cache";
+import { initAuth } from "~/lib/auth";
 
 const ensureLatestConfigurationSchema = async () => {
 	const volumes = await db.query.volumesTable.findMany({});
@@ -50,8 +51,10 @@ export const startup = async () => {
 		logger.error(`Error ensuring restic passfile exists: ${err.message}`);
 	});
 
-	const { initAuth } = await import("~/lib/auth");
-	await initAuth();
+	await initAuth().catch((err) => {
+		logger.error(`Error initializing auth: ${err.message}`);
+		throw err;
+	});
 
 	await ensureLatestConfigurationSchema();
 
