@@ -159,6 +159,13 @@ export const repositoriesTable = sqliteTable("repositories_table", {
 	status: text().$type<RepositoryStatus>().default("unknown"),
 	lastChecked: int("last_checked", { mode: "number" }),
 	lastError: text("last_error"),
+	// Bandwidth limit fields
+	uploadLimitEnabled: int("upload_limit_enabled", { mode: "boolean" }).notNull().default(false),
+	uploadLimitValue: int("upload_limit_value").notNull().default(0),
+	uploadLimitUnit: text("upload_limit_unit").notNull().default("MB/s"),
+	downloadLimitEnabled: int("download_limit_enabled", { mode: "boolean" }).notNull().default(false),
+	downloadLimitValue: int("download_limit_value").notNull().default(0),
+	downloadLimitUnit: text("download_limit_unit").notNull().default("MB/s"),
 	createdAt: int("created_at", { mode: "number" })
 		.notNull()
 		.default(sql`(unixepoch() * 1000)`),

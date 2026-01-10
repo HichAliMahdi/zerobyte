@@ -13,12 +13,32 @@ export const REPOSITORY_BACKENDS = {
 
 export type RepositoryBackend = keyof typeof REPOSITORY_BACKENDS;
 
+export const BANDWIDTH_UNITS = {
+	"KB/s": "KB/s",
+	"MB/s": "MB/s",
+	"GB/s": "GB/s",
+} as const;
+
+export type BandwidthUnit = keyof typeof BANDWIDTH_UNITS;
+
+// Bandwidth limit configuration
+export const bandwidthLimitSchema = type({
+	enabled: "boolean = false",
+	value: "number >= 0",
+	unit: type.valueOf(BANDWIDTH_UNITS).default("MB/s"),
+});
+
+export type BandwidthLimit = typeof bandwidthLimitSchema.infer;
+
 // Common fields for all repository configs
 const baseRepositoryConfigSchema = type({
 	isExistingRepository: "boolean?",
 	customPassword: "string?",
 	cacert: "string?",
 	insecureTls: "boolean?",
+	// Bandwidth controls
+	uploadLimit: bandwidthLimitSchema.optional(),
+	downloadLimit: bandwidthLimitSchema.optional(),
 });
 
 export const s3RepositoryConfigSchema = type({
