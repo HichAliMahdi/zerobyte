@@ -846,42 +846,42 @@ const copy = async (
 		args.push("latest");
 	}
 
-	// Apply bandwidth limits from both source and destination configs
-	// First apply destination config limits (for the main operation)
-	addCommonArgs(args, env, destConfig);
+	// Apply common args without automatic bandwidth limit injection to prevent duplication
+	addCommonArgs(args, env, destConfig, { skipBandwidth: true });
 
-	// Then explicitly apply source-side bandwidth limits for the from-repo operation
-	// Guard the formatBandwidthLimit calls and compute values upfront
-	const sourceUploadLimit = sourceConfig.uploadLimit ? formatBandwidthLimit(sourceConfig.uploadLimit) : "";
-	const sourceDownloadLimit = sourceConfig.downloadLimit ? formatBandwidthLimit(sourceConfig.downloadLimit) : "";
-
-	// Determine effective limit for source (pick smaller numeric value if both exist)
-	let effectiveLimit = "";
-	if (sourceUploadLimit && sourceDownloadLimit) {
-		effectiveLimit = parseInt(sourceUploadLimit) < parseInt(sourceDownloadLimit) ? sourceUploadLimit : sourceDownloadLimit;
-	} else if (sourceUploadLimit) {
-		effectiveLimit = sourceUploadLimit;
-	} else if (sourceDownloadLimit) {
-		effectiveLimit = sourceDownloadLimit;
-	}
+	// Manually handle bandwidth limits with correct copy semantics:
+	// --limit-download uses sourceConfig.downloadLimit (limiting downloads from source repo)
+	// --limit-upload uses destConfig.uploadLimit (limiting uploads to destination repo)
+	const sourceDownloadLimit = formatBandwidthLimit(sourceConfig.downloadLimit);
+	const destUploadLimit = formatBandwidthLimit(destConfig.uploadLimit);
 
 	if (sourceConfig.backend === "rclone") {
-		// For rclone source backends, use single consolidated bwlimit
-		if (effectiveLimit) {
-			args.push("-o", `rclone.from.bwlimit=${effectiveLimit}`);
+		// For rclone source backends, use rclone.from.bwlimit with effective source limit
+		const sourceUploadLimit = formatBandwidthLimit(sourceConfig.uploadLimit);
+
+		// Determine effective limit for source (pick smaller numeric value if both exist)
+		let effectiveSourceLimit = "";
+		if (sourceUploadLimit && sourceDownloadLimit) {
+			effectiveSourceLimit = parseInt(sourceUploadLimit) < parseInt(sourceDownloadLimit) ? sourceUploadLimit : sourceDownloadLimit;
+		} else if (sourceUploadLimit) {
+			effectiveSourceLimit = sourceUploadLimit;
+		} else if (sourceDownloadLimit) {
+			effectiveSourceLimit = sourceDownloadLimit;
+		}
+
+		if (effectiveSourceLimit) {
+			args.push("-o", `rclone.from.bwlimit=${effectiveSourceLimit}`);
 		}
 	} else {
-		// For restic source backends, apply individual limits using the computed values
-		if (sourceUploadLimit) {
-			args.push("--limit-upload", sourceUploadLimit);
-		}
+		// For restic source backends, apply download limit from source
 		if (sourceDownloadLimit) {
 			args.push("--limit-download", sourceDownloadLimit);
 		}
 	}
 
-	if (sourceConfig.backend === "sftp" && sourceEnv._SFTP_SSH_ARGS) {
-		args.push("-o", `sftp.args=${sourceEnv._SFTP_SSH_ARGS}`);
+	// Apply upload limit to destination for all backends
+	if (destUploadLimit) {
+		args.push("--limit-upload", destUploadLimit);
 	}
 
 	logger.info(`Copying snapshots from ${sourceRepoUrl} to ${destRepoUrl}...`);
@@ -935,7 +935,7 @@ const formatBandwidthLimit = (limit?: BandwidthLimit): string => {
 	return `${Math.floor(kibibytesPerSecond)}`;
 };
 
-export const addCommonArgs = (args: string[], env: Record<string, string>, config?: RepositoryConfig) => {
+export const addCommonArgs = (args: string[], env: Record<string, string>, config?: RepositoryConfig, options?: { skipBandwidth?: boolean }) => {
 	args.push("--json");
 
 	if (env._SFTP_SSH_ARGS) {
@@ -950,8 +950,8 @@ export const addCommonArgs = (args: string[], env: Record<string, string>, confi
 		args.push("--cacert", env.RESTIC_CACERT);
 	}
 
-	// Add bandwidth limits if configuration is provided
-	if (config) {
+	// Add bandwidth limits if configuration is provided and not skipped
+	if (config && !options?.skipBandwidth) {
 		if (config.backend === "rclone") {
 			// For rclone backends, consolidate both upload and download limits into one bwlimit
 			const uploadLimit = formatBandwidthLimit(config.uploadLimit);
