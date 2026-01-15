@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "9506e3c1-3131-4621-b74b-6023d63a0f00",
+  "id": "73952303-c589-4b3b-93f1-b70478329dbf",
   "prevId": "ad86ee2a-231e-45d1-9910-e4b7cac6a8af",
   "tables": {
     "account": {
@@ -717,7 +717,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": 0
+          "default": 1
         },
         "upload_limit_unit": {
           "name": "upload_limit_unit",
@@ -741,7 +741,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": 0
+          "default": 1
         },
         "download_limit_unit": {
           "name": "download_limit_unit",

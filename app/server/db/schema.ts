@@ -166,10 +166,10 @@ export const repositoriesTable = sqliteTable("repositories_table", {
 	lastChecked: int("last_checked", { mode: "number" }),
 	lastError: text("last_error"),
 	uploadLimitEnabled: int("upload_limit_enabled", { mode: "boolean" }).notNull().default(false),
-	uploadLimitValue: real("upload_limit_value").notNull().default(0),
+	uploadLimitValue: real("upload_limit_value").notNull().default(1),
 	uploadLimitUnit: text("upload_limit_unit").$type<BandwidthUnit>().notNull().default("Mbps"),
 	downloadLimitEnabled: int("download_limit_enabled", { mode: "boolean" }).notNull().default(false),
-	downloadLimitValue: real("download_limit_value").notNull().default(0),
+	downloadLimitValue: real("download_limit_value").notNull().default(1),
 	downloadLimitUnit: text("download_limit_unit").$type<BandwidthUnit>().notNull().default("Mbps"),
 	createdAt: int("created_at", { mode: "number" })
 		.notNull()

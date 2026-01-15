@@ -61,12 +61,12 @@ export const AdvancedForm = ({ form }: Props) => {
 														disabled={!uploadLimitEnabled}
 														type="number"
 														min={1}
-														step={1}
+														step={0.1}
 														max={999999}
 														placeholder="10"
 														className="pr-12"
 														{...field}
-														onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 1)}
+														onChange={(e) => field.onChange(parseFloat(e.target.value) || 1)}
 													/>
 													<div className="absolute inset-y-0 right-0 flex items-center pr-3">
 														<div className="h-4 w-px bg-border" />
@@ -139,12 +139,12 @@ export const AdvancedForm = ({ form }: Props) => {
 														placeholder="10"
 														type="number"
 														min={1}
-														step={1}
+														step={0.1}
 														max={999999}
 														disabled={!downloadLimitEnabled}
 														className="pr-12"
 														{...field}
-														onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 1)}
+														onChange={(e) => field.onChange(parseFloat(e.target.value) || 1)}
 													/>
 													<div className="absolute inset-y-0 right-0 flex items-center pr-3">
 														<div className="h-4 w-px bg-border" />
