@@ -251,6 +251,7 @@ const executeBackup = async (scheduleId: number, manual = false) => {
 	logger.info(`Starting backup ${schedule.name} for volume ${volume.name} to repository ${repository.name}`);
 
 	serverEvents.emit("backup:started", {
+		organizationId,
 		scheduleId,
 		volumeName: volume.name,
 		repositoryName: repository.name,
@@ -318,6 +319,7 @@ const executeBackup = async (scheduleId: number, manual = false) => {
 				organizationId,
 				onProgress: (progress) => {
 					serverEvents.emit("backup:progress", {
+						organizationId,
 						scheduleId,
 						volumeName: volume.name,
 						repositoryName: repository.name,
@@ -367,6 +369,7 @@ const executeBackup = async (scheduleId: number, manual = false) => {
 		}
 
 		serverEvents.emit("backup:completed", {
+			organizationId,
 			scheduleId,
 			volumeName: volume.name,
 			repositoryName: repository.name,
@@ -398,6 +401,7 @@ const executeBackup = async (scheduleId: number, manual = false) => {
 			.where(and(eq(backupSchedulesTable.id, scheduleId), eq(backupSchedulesTable.organizationId, organizationId)));
 
 		serverEvents.emit("backup:completed", {
+			organizationId,
 			scheduleId,
 			volumeName: volume.name,
 			repositoryName: repository.name,
@@ -633,6 +637,7 @@ const copyToMirrors = async (
 			logger.info(`[Background] Copying to mirror repository: ${mirror.repository.name}`);
 
 			serverEvents.emit("mirror:started", {
+				organizationId,
 				scheduleId,
 				repositoryId: mirror.repositoryId,
 				repositoryName: mirror.repository.name,
@@ -665,6 +670,7 @@ const copyToMirrors = async (
 			logger.info(`[Background] Successfully copied to mirror repository: ${mirror.repository.name}`);
 
 			serverEvents.emit("mirror:completed", {
+				organizationId,
 				scheduleId,
 				repositoryId: mirror.repositoryId,
 				repositoryName: mirror.repository.name,
@@ -680,6 +686,7 @@ const copyToMirrors = async (
 				.where(eq(backupScheduleMirrorsTable.id, mirror.id));
 
 			serverEvents.emit("mirror:completed", {
+				organizationId,
 				scheduleId,
 				repositoryId: mirror.repositoryId,
 				repositoryName: mirror.repository.name,

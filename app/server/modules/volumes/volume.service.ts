@@ -136,7 +136,7 @@ const mountVolume = async (idOrShortId: string | number) => {
 		.where(and(eq(volumesTable.id, volume.id), eq(volumesTable.organizationId, organizationId)));
 
 	if (status === "mounted") {
-		serverEvents.emit("volume:mounted", { volumeName: volume.name });
+		serverEvents.emit("volume:mounted", { organizationId, volumeName: volume.name });
 	}
 
 	return { error, status };
@@ -159,7 +159,7 @@ const unmountVolume = async (idOrShortId: string | number) => {
 		.where(and(eq(volumesTable.id, volume.id), eq(volumesTable.organizationId, organizationId)));
 
 	if (status === "unmounted") {
-		serverEvents.emit("volume:unmounted", { volumeName: volume.name });
+		serverEvents.emit("volume:unmounted", { organizationId, volumeName: volume.name });
 	}
 
 	return { error, status };
@@ -250,7 +250,7 @@ const updateVolume = async (idOrShortId: string | number, volumeData: UpdateVolu
 			.set({ status, lastError: error ?? null, lastHealthCheck: Date.now() })
 			.where(and(eq(volumesTable.id, existing.id), eq(volumesTable.organizationId, organizationId)));
 
-		serverEvents.emit("volume:updated", { volumeName: updated.name });
+		serverEvents.emit("volume:updated", { organizationId, volumeName: updated.name });
 	}
 
 	return { volume: updated };
@@ -301,7 +301,7 @@ const checkHealth = async (idOrShortId: string | number) => {
 	const { error, status } = await backend.checkHealth();
 
 	if (status !== volume.status) {
-		serverEvents.emit("volume:status_changed", { volumeName: volume.name, status });
+		serverEvents.emit("volume:status_changed", { organizationId, volumeName: volume.name, status });
 	}
 
 	await db

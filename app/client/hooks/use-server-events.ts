@@ -144,7 +144,7 @@ export function useServerEvents() {
 			});
 		});
 
-		eventSource.addEventListener("volume:status_updated", (e) => {
+		eventSource.addEventListener("volume:status_changed", (e) => {
 			const data = JSON.parse(e.data) as VolumeEvent;
 			console.info("[SSE] Volume status updated:", data);
 

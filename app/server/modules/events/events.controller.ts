@@ -7,6 +7,7 @@ import type { DoctorResult } from "~/schemas/restic";
 
 export const eventsController = new Hono().use(requireAuth).get("/", (c) => {
 	logger.info("Client connected to SSE endpoint");
+	const organizationId = c.get("organizationId");
 
 	return streamSSE(c, async (stream) => {
 		await stream.writeSSE({
@@ -14,7 +15,13 @@ export const eventsController = new Hono().use(requireAuth).get("/", (c) => {
 			event: "connected",
 		});
 
-		const onBackupStarted = async (data: { scheduleId: number; volumeName: string; repositoryName: string }) => {
+		const onBackupStarted = async (data: {
+			organizationId: string;
+			scheduleId: number;
+			volumeName: string;
+			repositoryName: string;
+		}) => {
+			if (data.organizationId !== organizationId) return;
 			await stream.writeSSE({
 				data: JSON.stringify(data),
 				event: "backup:started",
@@ -22,6 +29,7 @@ export const eventsController = new Hono().use(requireAuth).get("/", (c) => {
 		};
 
 		const onBackupProgress = async (data: {
+			organizationId: string;
 			scheduleId: number;
 			volumeName: string;
 			repositoryName: string;
@@ -33,6 +41,7 @@ export const eventsController = new Hono().use(requireAuth).get("/", (c) => {
 			bytes_done: number;
 			current_files: string[];
 		}) => {
+			if (data.organizationId !== organizationId) return;
 			await stream.writeSSE({
 				data: JSON.stringify(data),
 				event: "backup:progress",
@@ -40,39 +49,50 @@ export const eventsController = new Hono().use(requireAuth).get("/", (c) => {
 		};
 
 		const onBackupCompleted = async (data: {
+			organizationId: string;
 			scheduleId: number;
 			volumeName: string;
 			repositoryName: string;
 			status: "success" | "error" | "stopped" | "warning";
 		}) => {
+			if (data.organizationId !== organizationId) return;
 			await stream.writeSSE({
 				data: JSON.stringify(data),
 				event: "backup:completed",
 			});
 		};
 
-		const onVolumeMounted = async (data: { volumeName: string }) => {
+		const onVolumeMounted = async (data: { organizationId: string; volumeName: string }) => {
+			if (data.organizationId !== organizationId) return;
 			await stream.writeSSE({
 				data: JSON.stringify(data),
 				event: "volume:mounted",
 			});
 		};
 
-		const onVolumeUnmounted = async (data: { volumeName: string }) => {
+		const onVolumeUnmounted = async (data: { organizationId: string; volumeName: string }) => {
+			if (data.organizationId !== organizationId) return;
 			await stream.writeSSE({
 				data: JSON.stringify(data),
 				event: "volume:unmounted",
 			});
 		};
 
-		const onVolumeUpdated = async (data: { volumeName: string }) => {
+		const onVolumeUpdated = async (data: { organizationId: string; volumeName: string }) => {
+			if (data.organizationId !== organizationId) return;
 			await stream.writeSSE({
 				data: JSON.stringify(data),
 				event: "volume:updated",
 			});
 		};
 
-		const onMirrorStarted = async (data: { scheduleId: number; repositoryId: string; repositoryName: string }) => {
+		const onMirrorStarted = async (data: {
+			organizationId: string;
+			scheduleId: number;
+			repositoryId: string;
+			repositoryName: string;
+		}) => {
+			if (data.organizationId !== organizationId) return;
 			await stream.writeSSE({
 				data: JSON.stringify(data),
 				event: "mirror:started",
@@ -80,19 +100,22 @@ export const eventsController = new Hono().use(requireAuth).get("/", (c) => {
 		};
 
 		const onMirrorCompleted = async (data: {
+			organizationId: string;
 			scheduleId: number;
 			repositoryId: string;
 			repositoryName: string;
 			status: "success" | "error";
 			error?: string;
 		}) => {
+			if (data.organizationId !== organizationId) return;
 			await stream.writeSSE({
 				data: JSON.stringify(data),
 				event: "mirror:completed",
 			});
 		};
 
-		const onDoctorStarted = async (data: { repositoryId: string; repositoryName: string }) => {
+		const onDoctorStarted = async (data: { organizationId: string; repositoryId: string; repositoryName: string }) => {
+			if (data.organizationId !== organizationId) return;
 			await stream.writeSSE({
 				data: JSON.stringify(data),
 				event: "doctor:started",
@@ -101,17 +124,25 @@ export const eventsController = new Hono().use(requireAuth).get("/", (c) => {
 
 		const onDoctorCompleted = async (
 			data: {
+				organizationId: string;
 				repositoryId: string;
 				repositoryName: string;
 			} & DoctorResult,
 		) => {
+			if (data.organizationId !== organizationId) return;
 			await stream.writeSSE({
 				data: JSON.stringify(data),
 				event: "doctor:completed",
 			});
 		};
 
-		const onDoctorCancelled = async (data: { repositoryId: string; repositoryName: string; error?: string }) => {
+		const onDoctorCancelled = async (data: {
+			organizationId: string;
+			repositoryId: string;
+			repositoryName: string;
+			error?: string;
+		}) => {
+			if (data.organizationId !== organizationId) return;
 			await stream.writeSSE({
 				data: JSON.stringify(data),
 				event: "doctor:cancelled",

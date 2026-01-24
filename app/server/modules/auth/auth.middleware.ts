@@ -33,6 +33,14 @@ export const requireAuth = createMiddleware(async (c, next) => {
 		return c.json<unknown>({ message: "Invalid or expired session" }, 401);
 	}
 
+	const membership = await db.query.member.findFirst({
+		where: and(eq(member.userId, user.id), eq(member.organizationId, activeOrganizationId)),
+	});
+
+	if (!membership) {
+		return c.json({ message: "Invalid organization context" }, 403);
+	}
+
 	c.set("user", user);
 	c.set("organizationId", activeOrganizationId);
 

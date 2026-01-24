@@ -366,6 +366,7 @@ const startDoctor = async (id: string) => {
 		await db.update(repositoriesTable).set({ status: "doctor" }).where(eq(repositoriesTable.id, repository.id));
 
 		serverEvents.emit("doctor:started", {
+			organizationId: repository.organizationId,
 			repositoryId: repository.id,
 			repositoryName: repository.name,
 		});
@@ -405,6 +406,7 @@ const cancelDoctor = async (id: string) => {
 	await db.update(repositoriesTable).set({ status: "unknown" }).where(eq(repositoriesTable.id, repository.id));
 
 	serverEvents.emit("doctor:cancelled", {
+		organizationId: repository.organizationId,
 		repositoryId: repository.id,
 		repositoryName: repository.name,
 	});

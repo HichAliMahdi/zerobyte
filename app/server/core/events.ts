@@ -6,8 +6,9 @@ import type { DoctorResult } from "~/schemas/restic";
  * Event payloads for the SSE system
  */
 interface ServerEvents {
-	"backup:started": (data: { scheduleId: number; volumeName: string; repositoryName: string }) => void;
+	"backup:started": (data: { organizationId: string; scheduleId: number; volumeName: string; repositoryName: string }) => void;
 	"backup:progress": (data: {
+		organizationId: string;
 		scheduleId: number;
 		volumeName: string;
 		repositoryName: string;
@@ -20,31 +21,44 @@ interface ServerEvents {
 		current_files: string[];
 	}) => void;
 	"backup:completed": (data: {
+		organizationId: string;
 		scheduleId: number;
 		volumeName: string;
 		repositoryName: string;
 		status: "success" | "error" | "stopped" | "warning";
 	}) => void;
-	"mirror:started": (data: { scheduleId: number; repositoryId: string; repositoryName: string }) => void;
+	"mirror:started": (data: {
+		organizationId: string;
+		scheduleId: number;
+		repositoryId: string;
+		repositoryName: string;
+	}) => void;
 	"mirror:completed": (data: {
+		organizationId: string;
 		scheduleId: number;
 		repositoryId: string;
 		repositoryName: string;
 		status: "success" | "error";
 		error?: string;
 	}) => void;
-	"volume:mounted": (data: { volumeName: string }) => void;
-	"volume:unmounted": (data: { volumeName: string }) => void;
-	"volume:updated": (data: { volumeName: string }) => void;
-	"volume:status_changed": (data: { volumeName: string; status: string }) => void;
-	"doctor:started": (data: { repositoryId: string; repositoryName: string }) => void;
+	"volume:mounted": (data: { organizationId: string; volumeName: string }) => void;
+	"volume:unmounted": (data: { organizationId: string; volumeName: string }) => void;
+	"volume:updated": (data: { organizationId: string; volumeName: string }) => void;
+	"volume:status_changed": (data: { organizationId: string; volumeName: string; status: string }) => void;
+	"doctor:started": (data: { organizationId: string; repositoryId: string; repositoryName: string }) => void;
 	"doctor:completed": (
 		data: {
+			organizationId: string;
 			repositoryId: string;
 			repositoryName: string;
 		} & DoctorResult,
 	) => void;
-	"doctor:cancelled": (data: { repositoryId: string; repositoryName: string; error?: string }) => void;
+	"doctor:cancelled": (data: {
+		organizationId: string;
+		repositoryId: string;
+		repositoryName: string;
+		error?: string;
+	}) => void;
 }
 
 /**

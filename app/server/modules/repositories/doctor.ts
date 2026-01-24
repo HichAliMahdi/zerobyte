@@ -121,6 +121,7 @@ export const executeDoctor = async (
 	signal: AbortSignal,
 ) => {
 	const steps: DoctorStep[] = [];
+	const organizationId = getOrganizationId();
 
 	try {
 		const releaseLock = await repoMutex.acquireExclusive(repositoryId, "doctor", signal);
@@ -151,6 +152,7 @@ export const executeDoctor = async (
 		await saveDoctorResults(repositoryId, steps, finalStatus);
 
 		serverEvents.emit("doctor:completed", {
+			organizationId,
 			repositoryId,
 			repositoryName,
 			success: steps.every((s) => s.success),
@@ -176,6 +178,7 @@ export const executeDoctor = async (
 				.where(eq(repositoriesTable.id, repositoryId));
 
 			serverEvents.emit("doctor:cancelled", {
+				organizationId,
 				repositoryId,
 				repositoryName,
 				error: toMessage(error),
@@ -188,6 +191,7 @@ export const executeDoctor = async (
 
 			steps.push({ step: "doctor", success: false, output: null, error: toMessage(error) });
 			serverEvents.emit("doctor:completed", {
+				organizationId,
 				repositoryId,
 				repositoryName,
 				success: false,

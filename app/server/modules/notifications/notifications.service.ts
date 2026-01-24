@@ -1,10 +1,11 @@
-import { eq, and, ne } from "drizzle-orm";
+import { eq, and, ne, inArray } from "drizzle-orm";
 import { ConflictError, InternalServerError, NotFoundError } from "http-errors-enhanced";
 import slugify from "slugify";
 import { db } from "../../db/db";
 import {
 	notificationDestinationsTable,
 	backupScheduleNotificationsTable,
+	backupSchedulesTable,
 	type NotificationDestination,
 } from "../../db/schema";
 import { cryptoUtils } from "../../utils/crypto";
@@ -256,6 +257,15 @@ const testDestination = async (id: number) => {
 };
 
 const getScheduleNotifications = async (scheduleId: number) => {
+	const organizationId = getOrganizationId();
+	const schedule = await db.query.backupSchedulesTable.findFirst({
+		where: and(eq(backupSchedulesTable.id, scheduleId), eq(backupSchedulesTable.organizationId, organizationId)),
+	});
+
+	if (!schedule) {
+		throw new NotFoundError("Backup schedule not found");
+	}
+
 	const assignments = await db.query.backupScheduleNotificationsTable.findMany({
 		where: eq(backupScheduleNotificationsTable.scheduleId, scheduleId),
 		with: {
@@ -263,7 +273,7 @@ const getScheduleNotifications = async (scheduleId: number) => {
 		},
 	});
 
-	return assignments;
+	return assignments.filter((a) => a.destination.organizationId === organizationId);
 };
 
 const updateScheduleNotifications = async (
@@ -276,6 +286,29 @@ const updateScheduleNotifications = async (
 		notifyOnFailure: boolean;
 	}>,
 ) => {
+	const organizationId = getOrganizationId();
+	const schedule = await db.query.backupSchedulesTable.findFirst({
+		where: and(eq(backupSchedulesTable.id, scheduleId), eq(backupSchedulesTable.organizationId, organizationId)),
+	});
+
+	if (!schedule) {
+		throw new NotFoundError("Backup schedule not found");
+	}
+
+	const destinationIds = [...new Set(assignments.map((a) => a.destinationId))];
+	if (destinationIds.length > 0) {
+		const destinations = await db.query.notificationDestinationsTable.findMany({
+			where: and(
+				inArray(notificationDestinationsTable.id, destinationIds),
+				eq(notificationDestinationsTable.organizationId, organizationId),
+			),
+		});
+
+		if (destinations.length !== destinationIds.length) {
+			throw new NotFoundError("One or more notification destinations were not found");
+		}
+	}
+
 	await db.delete(backupScheduleNotificationsTable).where(eq(backupScheduleNotificationsTable.scheduleId, scheduleId));
 
 	if (assignments.length > 0) {
@@ -305,6 +338,8 @@ const sendBackupNotification = async (
 	},
 ) => {
 	try {
+		const organizationId = getOrganizationId();
+
 		const assignments = await db.query.backupScheduleNotificationsTable.findMany({
 			where: eq(backupScheduleNotificationsTable.scheduleId, scheduleId),
 			with: {
@@ -313,6 +348,7 @@ const sendBackupNotification = async (
 		});
 
 		const relevantAssignments = assignments.filter((assignment) => {
+			if (assignment.destination.organizationId !== organizationId) return false;
 			if (!assignment.destination.enabled) return false;
 
 			switch (event) {
