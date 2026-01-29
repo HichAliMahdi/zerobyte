@@ -32,7 +32,7 @@ const runUnlockStep = async (config: RepositoryConfig, signal?: AbortSignal) => 
 
 const runCheckStep = async (config: RepositoryConfig, signal: AbortSignal) => {
 	const orgId = getOrganizationId();
-	const result = await restic.check(config, { readData: true, signal, organizationId: orgId }).then(
+	const result = await restic.check(config, { readData: false, signal, organizationId: orgId }).then(
 		(result) => result,
 		(error) => ({ success: false, output: null, error: toMessage(error), hasErrors: true }),
 	);

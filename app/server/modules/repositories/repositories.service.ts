@@ -397,6 +397,7 @@ const cancelDoctor = async (id: string) => {
 
 	const abortController = runningDoctors.get(repository.id);
 	if (!abortController) {
+		await db.update(repositoriesTable).set({ status: "unknown" }).where(eq(repositoriesTable.id, repository.id));
 		throw new ConflictError("No doctor operation is currently running");
 	}
 
