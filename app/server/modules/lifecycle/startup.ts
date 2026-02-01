@@ -1,7 +1,7 @@
 import { Scheduler } from "../../core/scheduler";
-import { and, eq, or } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "../../db/db";
-import { backupSchedulesTable, volumesTable } from "../../db/schema";
+import { backupSchedulesTable } from "../../db/schema";
 import { logger } from "../../utils/logger";
 import { volumeService } from "../volumes/volume.service";
 import { CleanupDanglingMountsJob } from "../../jobs/cleanup-dangling";
@@ -12,7 +12,7 @@ import { repositoriesService } from "../repositories/repositories.service";
 import { notificationsService } from "../notifications/notifications.service";
 import { VolumeAutoRemountJob } from "~/server/jobs/auto-remount";
 import { cache } from "~/server/utils/cache";
-import { initAuth } from "~/lib/auth";
+import { initAuth } from "~/server/lib/auth";
 import { toMessage } from "~/server/utils/errors";
 import { withContext } from "~/server/core/request-context";
 
@@ -62,10 +62,14 @@ export const startup = async () => {
 	await ensureLatestConfigurationSchema();
 
 	const volumes = await db.query.volumesTable.findMany({
-		where: or(
-			eq(volumesTable.status, "mounted"),
-			and(eq(volumesTable.autoRemount, true), eq(volumesTable.status, "error")),
-		),
+		where: {
+			OR: [
+				{ status: "mounted" },
+				{
+					AND: [{ autoRemount: true }, { status: "error" }],
+				},
+			],
+		},
 	});
 
 	for (const volume of volumes) {
