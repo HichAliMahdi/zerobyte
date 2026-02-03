@@ -42,6 +42,8 @@ import {
 } from "../notifications/notifications.dto";
 import { notificationsService } from "../notifications/notifications.service";
 import { requireAuth } from "../auth/auth.middleware";
+import { backupsExecutionService } from "./backups.execution";
+import { logger } from "~/server/utils/logger";
 
 export const backupScheduleController = new Hono()
 	.use(requireAuth)
@@ -83,21 +85,31 @@ export const backupScheduleController = new Hono()
 	})
 	.post("/:scheduleId/run", runBackupNowDto, async (c) => {
 		const scheduleId = c.req.param("scheduleId");
-		backupsService.executeBackup(Number(scheduleId), true).catch((err) => {
-			console.error(`Error executing manual backup for schedule ${scheduleId}:`, err);
+		const result = await backupsExecutionService.validateBackupExecution(Number(scheduleId), true);
+
+		if (result.type === "failure") {
+			throw result.error;
+		}
+
+		if (result.type === "skipped") {
+			return c.json<RunBackupNowDto>({ success: true }, 200);
+		}
+
+		backupsExecutionService.executeBackup(Number(scheduleId), true).catch((err) => {
+			logger.error(`Error executing manual backup for schedule ${scheduleId}:`, err);
 		});
 
 		return c.json<RunBackupNowDto>({ success: true }, 200);
 	})
 	.post("/:scheduleId/stop", stopBackupDto, async (c) => {
 		const scheduleId = c.req.param("scheduleId");
-		await backupsService.stopBackup(Number(scheduleId));
+		await backupsExecutionService.stopBackup(Number(scheduleId));
 
 		return c.json<StopBackupDto>({ success: true }, 200);
 	})
 	.post("/:scheduleId/forget", runForgetDto, async (c) => {
 		const scheduleId = c.req.param("scheduleId");
-		await backupsService.runForget(Number(scheduleId));
+		await backupsExecutionService.runForget(Number(scheduleId));
 
 		return c.json<RunForgetDto>({ success: true }, 200);
 	})
