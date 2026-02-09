@@ -10,8 +10,6 @@ services:
       - /dev/fuse:/dev/fuse
     cap_add:
       - SYS_ADMIN
-    security_opt:                     # <-- Added for FUSE
-      - apparmor:unconfined
     env_file:
       - .env.local
     environment:
@@ -28,31 +26,28 @@ services:
       - ./tmp/:/test-data
 
   zerobyte-prod:
+    # image: ghcr.io/nicotsx/zerobyte:v0.22.0
     build:
       context: .
       dockerfile: Dockerfile
       target: production
       args:
         - APP_VERSION=0.20.0
-    container_name: zerobyte
+    container_name: zerobyte-prod
     restart: unless-stopped
     devices:
       - /dev/fuse:/dev/fuse
     cap_add:
       - SYS_ADMIN
-    security_opt:                     # <-- Added for FUSE
-      - apparmor:unconfined
     ports:
       - "4096:4096"
     environment:
       - APP_SECRET=94bad4678ce84a60b9789bd2114a6bf780aeb38df426f7352c941c66e25d5c2b
       - BASE_URL=http://localhost:4096
-      - NODE_ENV=production            # <-- Added for clarity
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/lib/zerobyte:/var/lib/zerobyte
       - ~/.config/rclone:/root/.config/rclone:ro
-      - ./tmp/:/app/remote_sftp       # <-- Added for mounting SFTP
 
   zerobyte-e2e:
     build:
@@ -61,18 +56,16 @@ services:
       target: production
     container_name: zerobyte-e2e
     restart: unless-stopped
+    environment:
+      - DISABLE_RATE_LIMITING=true
+      - APP_SECRET=94bad4678ce84a60b9789bd2114a6bf780aeb38df426f7352c941c66e25d5c2b
+      - BASE_URL=http://localhost:4096
     devices:
       - /dev/fuse:/dev/fuse
     cap_add:
       - SYS_ADMIN
-    security_opt:                     # <-- Added for FUSE
-      - apparmor:unconfined
     ports:
-      - "4097:4097"
-    environment:
-      - DISABLE_RATE_LIMITING=true
-      - APP_SECRET=94bad4678ce84a60b9789bd2114a6bf780aeb38df426f7352c941c66e25d5c2b
-      - BASE_URL=http://localhost:4097
+      - "4096:4096"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./playwright/data:/var/lib/zerobyte/data
